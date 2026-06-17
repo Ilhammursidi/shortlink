@@ -18,8 +18,14 @@ func NewLinkRepository(db *pgxpool.Pool, rdb *redis.Client) *LinkRepository {
 	return &LinkRepository{db: db, rdb: rdb}
 }
 
+func (r *LinkRepository) Create(userID int, originalURL, slug string) error {
+	query := `INSERT INTO links (user_id, original_url, slug) VALUES ($1,$2,$3)`
+	_, err := r.db.Exec(context.Background(), query, userID, originalURL, slug)
+	return err
+}
+
 func (r *LinkRepository) FindByUser(userID int) ([]dto.LinkResponse, error) {
-	query := `SELECT id, original_url, slug, created_at FROM links WHERE user_id = $1 ORDER BY created_at DESC`
+	query := `SELECT id, original_url, slug, created_at FROM links WHERE user_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC`
 	rows, err := r.db.Query(context.Background(), query, userID)
 	if err != nil {
 		return nil, err
@@ -44,7 +50,7 @@ func (r *LinkRepository) FindBySlug(ctx context.Context, slug string) (string, e
 		return cached, nil
 	}
 
-	query := `SELECT original_url FROM links WHERE slug = $1`
+	query := `SELECT original_url FROM links WHERE slug = $1 AND deleted_at IS NULL`
 	row := r.db.QueryRow(ctx, query, slug)
 
 	var originalURL string
@@ -55,4 +61,11 @@ func (r *LinkRepository) FindBySlug(ctx context.Context, slug string) (string, e
 
 	r.rdb.Set(ctx, "slug:"+slug, originalURL, 24*time.Hour)
 	return originalURL, nil
+}
+
+// belum dipakai
+func (r *LinkRepository) SoftDelete(id int) error {
+	query := `UPDATE links SET deleted_at = NOW() WHERE id = $1`
+	_, err := r.db.Exec(context.Background(), query, id)
+	return err
 }
