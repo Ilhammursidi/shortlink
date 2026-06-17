@@ -1,0 +1,21 @@
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+
+# Go cache
+**/vendor
+
+# IDE / system files
+.DS_Store
+.git
+.gitignore
+
+# Environment config
+.env
+
+# Local uploads should be mounted at runtime
+uploads/*
+!uploads/.gitkeep
