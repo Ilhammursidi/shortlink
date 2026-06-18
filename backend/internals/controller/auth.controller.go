@@ -37,7 +37,7 @@ func (a *AuthController) Login(c *gin.Context) {
 	}
 	resp, err := a.authService.Login(req)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, dto.ErrorResponse(err.Error()))
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse(err.Error()))
 		return
 	}
 	c.JSON(http.StatusOK, dto.SuccessResponse("Login successful", resp))
