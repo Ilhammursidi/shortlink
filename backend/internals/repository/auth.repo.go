@@ -22,12 +22,12 @@ func (r *AuthRepository) CreateUser(name, email, hashedPassword string) error {
 }
 
 func (r *AuthRepository) FindByEmail(email string) (*dto.UserResponse, string, error) {
-	query := `SELECT id, name, email, password, COALESCE(picture, ''), created_at FROM users WHERE email = $1`
+	query := `SELECT id, name, email, password, COALESCE(picture, ''), TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') FROM users WHERE email = $1`
 	row := r.db.QueryRow(context.Background(), query, email)
 
 	var user dto.UserResponse
 	var password string
-	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.Picture, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &password, &user.Picture, &user.CreatedAt)
 	if err != nil {
 		return nil, "", err
 	}
