@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { useAuth } from "../hooks/useAuth";
+import Footer from "../components/Footer";
 
 const LoginPage = () => {
   const { login, loading, error } = useAuth();
   const [form, setForm] = useState({
+    id: "",
     email: "",
     password: "",
   });
@@ -19,7 +21,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
 
         {/* Title */}
