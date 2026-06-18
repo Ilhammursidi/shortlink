@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router"; // 1. Ditambahkan useLocation
 import api from "../api/axios";
 import { useAuth } from "../hooks/useAuth";
 import Navbar from "../components/Navbar";
@@ -10,6 +10,7 @@ const DashboardPage = () => {
   const { getUser } = useAuth();
   const user = getUser();
   const navigate = useNavigate();
+  const location = useLocation(); // 2. Inisialisasi useLocation
 
   const [links, setLinks] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -19,22 +20,32 @@ const DashboardPage = () => {
   const [page, setPage] = useState(1);
   const perPage = 4;
 
+  // 3. Efek untuk menangkap status sukses login dari halaman sebelumnya
+  useEffect(() => {
+    if (location.state?.loginSuccess) {
+      toast.success("Login berhasil! Selamat datang kembali.");
+      
+      // Bersihkan state di browser history agar saat di-refresh toast tidak muncul lagi
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
+
   const fetchLinks = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const res = await api.get(`/api/links/${user.id}`);
-    const data = Array.isArray(res.data.results) ? res.data.results : [];
-    setLinks(data);
-    setFiltered(data);
-  } catch (err) {
-    setError(err.response?.data?.message || "Failed to fetch links");
-    setLinks([]);
-    setFiltered([]);
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.get(`/api/links/${user.id}`);
+      const data = Array.isArray(res.data.results) ? res.data.results : [];
+      setLinks(data);
+      setFiltered(data);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch links");
+      setLinks([]);
+      setFiltered([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchLinks();
@@ -62,6 +73,7 @@ const DashboardPage = () => {
     try {
       await api.delete(`/api/links/${id}`);
       fetchLinks();
+      toast.success("Link deleted successfully"); // Tambahan toast agar lebih informatif
     } catch {
       toast.error("Failed to delete");
     }
@@ -131,45 +143,51 @@ const DashboardPage = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {paginated.map((link) => (
-              <div
-                key={link.id}
-                className="bg-white border rounded-lg px-4 py-3 flex justify-between items-start sm:items-center gap-3"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-blue-600 text-sm font-medium truncate">
-                    🔗 <a href={link.short_url} target="blank">{link.short_url}</a>
-                  </p>
-                  <p className="text-gray-400 text-xs truncate">
-                    {link.original_url}
-                  </p>
-                  <p className="text-gray-400 text-xs mt-1">
-                    📅{" "}
-                    {new Date(link.created_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    }).toUpperCase()}
-                  </p>
+            {paginated.map((link) => {
+              // 4. Definisikan string URL pendek agar rapi dan bisa dipakai berulang
+              const shortUrlString = `http://shortlink:8080/r/${link.slug}`;
+              
+              return (
+                <div
+                  key={link.id}
+                  className="bg-white border rounded-lg px-4 py-3 flex justify-between items-start sm:items-center gap-3"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-blue-600 text-sm font-medium truncate">
+                      🔗 <a href={shortUrlString} target="_blank" rel="noreferrer">{shortUrlString}</a>
+                    </p>
+                    <p className="text-gray-400 text-xs truncate">
+                      {link.original_url}
+                    </p>
+                    <p className="text-gray-400 text-xs mt-1">
+                      📅{" "}
+                      {new Date(link.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      }).toUpperCase()}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      // 5. Mengubah customURL menjadi shortUrlString yang sudah valid
+                      onClick={() => handleCopy(shortUrlString)}
+                      className="p-1.5 hover:bg-gray-100 rounded text-gray-500 text-sm"
+                      title="Copy"
+                    >
+                      📋
+                    </button>
+                    <button
+                      onClick={() => handleDelete(link.id)}
+                      className="p-1.5 hover:bg-gray-100 rounded text-gray-500 text-sm"
+                      title="Delete"
+                    >
+                      🗑
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <button
-                    onClick={() => handleCopy(link.short_url)}
-                    className="p-1.5 hover:bg-gray-100 rounded text-gray-500 text-sm"
-                    title="Copy"
-                  >
-                    📋
-                  </button>
-                  <button
-                    onClick={() => handleDelete(link.id)}
-                    className="p-1.5 hover:bg-gray-100 rounded text-gray-500 text-sm"
-                    title="Delete"
-                  >
-                    🗑
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
