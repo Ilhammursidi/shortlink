@@ -25,7 +25,9 @@ func (r *LinkRepository) Create(userID int, originalURL, slug string) error {
 }
 
 func (r *LinkRepository) FindByUser(userID int) ([]dto.LinkResponse, error) {
-	query := `SELECT id, original_url, slug, created_at FROM links WHERE user_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC`
+	query := `SELECT id, original_url, slug, TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') 
+	          FROM links WHERE user_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC`
+
 	rows, err := r.db.Query(context.Background(), query, userID)
 	if err != nil {
 		return nil, err
@@ -40,6 +42,9 @@ func (r *LinkRepository) FindByUser(userID int) ([]dto.LinkResponse, error) {
 			return nil, err
 		}
 		links = append(links, l)
+	}
+	if links == nil {
+		links = []dto.LinkResponse{}
 	}
 	return links, nil
 }
@@ -63,9 +68,13 @@ func (r *LinkRepository) FindBySlug(ctx context.Context, slug string) (string, e
 	return originalURL, nil
 }
 
-// belum dipakai
 func (r *LinkRepository) SoftDelete(id int) error {
 	query := `UPDATE links SET deleted_at = NOW() WHERE id = $1`
 	_, err := r.db.Exec(context.Background(), query, id)
 	return err
+}
+
+func (r *LinkRepository) DeleteCache(ctx context.Context, slug string) error {
+	// Menghapus key "slug:nama-slug" dari memory Redis
+	return r.rdb.Del(ctx, "slug:"+slug).Err()
 }
