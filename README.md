@@ -2,6 +2,15 @@
 
 A full-stack short link application built with Go, React, PostgreSQL, Redis, Docker, and Nginx.
 
+## Preview
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
+![alt text](image-4.png)
+![alt text](image-5.png)
+![alt text](image-6.png)
+
 ## Repository Overview
 
 This repository contains:
@@ -11,13 +20,34 @@ This repository contains:
 - `docker-compose.yml` : local deployment with Postgres, Redis, backend, frontend, and Nginx proxy
 - `proxy.conf` : Nginx reverse proxy configuration for routing domain requests
 
+## Environment Variables
+
+For local development, all required environment variables are already configured inside `docker-compose.yml`.
+
+Backend variables include:
+
+- PORT
+- DATABASE_URL
+- REDIS_HOST
+- REDIS_PORT
+- SECRET_KEY
+- BACKEND_URL
+- FRONTEND_URL
+
+Frontend build arguments:
+
+- VITE_BASE_URL
+
+No additional `.env` configuration is required for local Docker deployment.
+
+
 ## Clone from GitHub
 
 1. Open a terminal.
 2. Clone the repository:
 
 ```bash
-git clone https://github.com/ilhammursidi/shortLink.git
+git clone https://github.com/ilhammursidi/shortlink.git
 ```
 
 3. Change directory into the project:
@@ -32,10 +62,23 @@ cd shortlink
 docker compose up --build -d
 ```
 
+### API Endpoints Documentation
+
+| Method | Endpoint | Auth Required | Description |
+| :--- | :--- | :---: | :--- |
+| GET | `/r/:slug` | ❌ No | Redirect short link to original destination |
+| POST | `/api/auth/register` | ❌ No | Register a new user account |
+| POST | `/api/auth/login` | ❌ No | Authenticate user and get access token |
+| POST | `/api/links` | 🔒 Yes (JWT) | Create a new short link |
+| GET | `/api/links/:user_id` | 🔒 Yes (JWT) | Get all links created by a specific user |
+| DELETE | `/api/links/:id` | 🔒 Yes (JWT) | Delete a short link by its ID |
+| POST | `/api/user/:id/picture` | 🔒 Yes (JWT) | Upload or update user profile picture |
+
+
 ## Project File Structure
 
 ```
-final-phase/
+shortlink/
 ├── backend/
 │   ├── cmd/main.go
 │   ├── db/migrations/
@@ -129,7 +172,7 @@ http://localhost:5173
 
 ## Ports
 
-- `http://shortlin:8080` → frontend via Nginx proxy
+- `http://shortlink:8080` → frontend via Nginx proxy
 - `http://localhost:5173` → frontend direct
 - `http://localhost:8888` → backend direct
 - `5432` → PostgreSQL
