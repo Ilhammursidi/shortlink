@@ -1,131 +1,202 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import api from "../api/axios";
 import { useAuth } from "../hooks/useAuth";
 import Navbar from "../components/Navbar";
-import LinkCard from "../components/LinkCard";
+import Footer from "../components/Footer";
+import { toast } from "sonner";
 
 const DashboardPage = () => {
   const { getUser } = useAuth();
   const user = getUser();
+  const navigate = useNavigate();
 
   const [links, setLinks] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [form, setForm] = useState({
-    original_url: "",
-    slug: "",
-  });
+  const [page, setPage] = useState(1);
+  const perPage = 4;
 
   const fetchLinks = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.get(`/api/links/${user.id}`);
-      setLinks(res.data || []);
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed to fetch links");
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  setError(null);
+  try {
+    const res = await api.get(`/api/links/${user.id}`);
+    const data = Array.isArray(res.data.results) ? res.data.results : [];
+    setLinks(data);
+    setFiltered(data);
+  } catch (err) {
+    setError(err.response?.data?.message || "Failed to fetch links");
+    setLinks([]);
+    setFiltered([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchLinks();
   }, []);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  useEffect(() => {
+    const q = search.toLowerCase();
+    setFiltered(
+      links.filter(
+        (l) =>
+          l.slug.toLowerCase().includes(q) ||
+          l.original_url.toLowerCase().includes(q)
+      )
+    );
+    setPage(1);
+  }, [search, links]);
+
+  const handleCopy = (shortURL) => {
+    navigator.clipboard.writeText(shortURL);
+    toast.success("Copied!");
   };
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    setError(null);
+  const handleDelete = async (id) => {
+    if (!confirm("Hapus link ini?")) return;
     try {
-      await api.post("/api/links", {
-        user_id: user.id,
-        original_url: form.original_url,
-        slug: form.slug,
-      });
-      setForm({ original_url: "", slug: "" });
+      await api.delete(`/api/links/${id}`);
       fetchLinks();
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed to create link");
+    } catch {
+      toast.error("Failed to delete");
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-100">
+  const totalPages = Math.ceil(filtered.length / perPage);
+  const paginated = filtered.slice((page - 1) * perPage, page * perPage);
 
-      {/* Navbar */}
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
 
-      <div className="max-w-2xl mx-auto py-8 px-4">
+      <div className="flex-1 w-full max-w-2xl mx-auto py-8 px-4">
 
-        {/* Form Buat Link */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-          <h2 className="text-lg font-semibold mb-4">Buat Shortlink</h2>
-
-          {/* Error */}
-          {error && (
-            <p className="text-red-500 text-sm mb-4">{error}</p>
-          )}
-
-          {/* Original URL */}
-          <div className="mb-3">
-            <label className="block text-sm font-medium mb-1">
-              Original URL
-            </label>
-            <input
-              type="text"
-              name="original_url"
-              value={form.original_url}
-              onChange={handleChange}
-              placeholder="https://example.com/very-long-url"
-              className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        {/* Header */}
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">My Links</h2>
+            <p className="text-sm text-gray-400">
+              Manage and track your shortened digital assets.
+            </p>
           </div>
-
-          {/* Slug */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Slug</label>
-            <div className="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
-              <span className="bg-gray-100 px-3 py-2 text-gray-500 text-sm border-r">
-                shortlink/
-              </span>
-              <input
-                type="text"
-                name="slug"
-                value={form.slug}
-                onChange={handleChange}
-                placeholder="my-link"
-                className="flex-1 px-3 py-2 focus:outline-none text-sm"
-              />
-            </div>
+          <div className="text-right">
+            <p className="text-xs text-gray-400 uppercase font-semibold tracking-wide">
+              Total Active
+            </p>
+            <p className="text-3xl font-bold text-blue-600">{links.length}</p>
           </div>
-
-          {/* Submit */}
-          <button
-            onClick={handleCreate}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-          >
-            Buat Link
-          </button>
         </div>
 
-        {/* List Link */}
-        <h2 className="text-lg font-semibold mb-3">Link Saya</h2>
+        {/* Search */}
+        <div className="flex items-center bg-white border rounded-lg px-3 py-2 mb-4 gap-2">
+          <span className="text-gray-400 text-sm">🔍</span>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name or URL..."
+            className="flex-1 text-sm focus:outline-none"
+          />
+          <span className="text-gray-400 cursor-pointer">⚙</span>
+        </div>
 
+        {/* Error */}
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
+        {/* Create button mobile */}
+        <button
+          onClick={() => navigate("/links/create")}
+          className="md:hidden w-full mb-4 bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700"
+        >
+          + Create New Link
+        </button>
+
+        {/* Link List */}
         {loading ? (
-          <p className="text-center text-gray-500">Loading...</p>
-        ) : links.length === 0 ? (
-          <p className="text-center text-gray-500">Belum ada link</p>
+          <p className="text-center text-gray-400 py-10">Loading...</p>
+        ) : paginated.length === 0 ? (
+          <div className="text-center py-10">
+            <p className="text-gray-400 mb-4">Belum ada link</p>
+            <button
+              onClick={() => navigate("/links/create")}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+            >
+              + Create Your First Link
+            </button>
+          </div>
         ) : (
-          links.map((link) => (
-            <LinkCard key={link.id} link={link} />
-          ))
+          <div className="space-y-3">
+            {paginated.map((link) => (
+              <div
+                key={link.id}
+                className="bg-white border rounded-lg px-4 py-3 flex justify-between items-start sm:items-center gap-3"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-blue-600 text-sm font-medium truncate">
+                    🔗 <a href={link.short_url} target="blank">{link.short_url}</a>
+                  </p>
+                  <p className="text-gray-400 text-xs truncate">
+                    {link.original_url}
+                  </p>
+                  <p className="text-gray-400 text-xs mt-1">
+                    📅{" "}
+                    {new Date(link.created_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    }).toUpperCase()}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => handleCopy(link.short_url)}
+                    className="p-1.5 hover:bg-gray-100 rounded text-gray-500 text-sm"
+                    title="Copy"
+                  >
+                    📋
+                  </button>
+                  <button
+                    onClick={() => handleDelete(link.id)}
+                    className="p-1.5 hover:bg-gray-100 rounded text-gray-500 text-sm"
+                    title="Delete"
+                  >
+                    🗑
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-between items-center mt-6 text-sm text-gray-500">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="hover:text-blue-600 disabled:opacity-40"
+            >
+              ‹ Prev Page
+            </button>
+            <span>{page} of {totalPages}</span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="hover:text-blue-600 disabled:opacity-40"
+            >
+              Next ›
+            </button>
+          </div>
         )}
 
       </div>
+
+      <Footer />
     </div>
   );
 };
