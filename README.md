@@ -129,7 +129,7 @@ http://localhost:5173
 
 ## Ports
 
-- `http://shortlin:8080` → frontend via Nginx proxy
+- `http://shortlink:8080` → frontend via Nginx proxy
 - `http://localhost:5173` → frontend direct
 - `http://localhost:8888` → backend direct
 - `5432` → PostgreSQL
