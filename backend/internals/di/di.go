@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-migrate/migrate/v4"
 	"github.com/ilhammursidi/shortlink/internals/controller"
 	"github.com/ilhammursidi/shortlink/internals/repository"
 	"github.com/ilhammursidi/shortlink/internals/routes"
@@ -16,9 +15,11 @@ import (
 )
 
 func Init() *gin.Engine {
-	db, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	dbURL := os.Getenv("DATABASE_URL")
+
+	// Inisialisasi koneksi database Postgres
+	db, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
-		// panic(err)
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 	if err := db.Ping(context.Background()); err != nil {
@@ -26,17 +27,7 @@ func Init() *gin.Engine {
 	}
 	log.Println("database connected")
 
-	m, err := migrate.New("file://db/migrations", os.Getenv("DATABASE_URL"))
-	if err != nil {
-		// panic(err)
-		log.Fatalf("failed to init migration: %v", err)
-	}
-
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("failed to run migration: %v", err)
-	}
-	log.Println("migration done")
-
+	// Inisialisasi koneksi Redis cache
 	rdb := redis.NewClient(&redis.Options{
 		Addr: os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
 	})
@@ -46,6 +37,7 @@ func Init() *gin.Engine {
 	}
 	log.Println("redis connected")
 
+	// Dependency Injection Setup
 	authRepo := repository.NewAuthRepository(db)
 	linkRepo := repository.NewLinkRepository(db, rdb)
 	userRepo := repository.NewUserRepository(db)
