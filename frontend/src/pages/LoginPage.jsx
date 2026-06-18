@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 import Footer from "../components/Footer";
+import { Eye, EyeOff } from "lucide-react"; // Diubah dari EyeClosed ke EyeOff
 
 const LoginPage = () => {
   const { login, loading, error } = useAuth();
@@ -11,13 +12,20 @@ const LoginPage = () => {
     password: "",
   });
 
+  // State baru untuk mengontrol visibilitas password
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    login(form);
+  const handleSubmit = async () => {
+    await login(form);
+  };
+
+  // Fungsi toggle mata
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -50,18 +58,34 @@ const LoginPage = () => {
         {/* Password */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-1">Password</label>
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="••••••"
-            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          
+          {/* Container pembungkus harus relative */}
+          <div className="relative flex items-center">
+            <input
+              // Tipe input berubah dinamis berdasarkan state showPassword
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="••••••"
+              // Ditambahkan pr-10 agar teks password tidak tertutup oleh ikon mata
+              className="w-full border rounded-lg pl-3 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            
+            {/* Tombol mata diletakkan absolut di kanan */}
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute right-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
         </div>
 
         {/* Submit */}
         <button
+          type="button"
           onClick={handleSubmit}
           disabled={loading}
           className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
