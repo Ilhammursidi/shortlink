@@ -6,6 +6,7 @@ import LandingPage from "./pages/LandingPage";
 import CreateLinkPage from "./pages/CreateLinkPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
+import { Toaster } from "sonner";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -19,7 +20,10 @@ const PublicRoute = ({ children }) => {
 
 const App = () => {
   return (
+    <>
+      <Toaster></Toaster>
     <Routes>
+      
 
       {/* Landing Page */}
       <Route path="/" element={<LandingPage />} />
@@ -59,7 +63,7 @@ const App = () => {
             <CreateLinkPage />
           </PrivateRoute>
         }
-      />
+        />
 
       <Route
         path="/profile"
@@ -68,12 +72,13 @@ const App = () => {
             <ProfilePage />
           </PrivateRoute>
         }
-      />
+        />
 
       {/* 404 — harus paling bawah */}
       <Route path="*" element={<NotFoundPage />} />
 
     </Routes>
+        </>
   );
 };
 
