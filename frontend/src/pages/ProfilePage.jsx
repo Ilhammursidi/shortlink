@@ -11,10 +11,10 @@ const ProfilePage = () => {
 
     const [emailNotif, setEmailNotif] = useState(true);
     const [uploading, setUploading] = useState(false);
-   const [picture, setPicture] = useState(() => {
-  const u = JSON.parse(localStorage.getItem("user"));
-  return u?.picture || null;
-});
+    const [picture, setPicture] = useState(() => {
+        const u = JSON.parse(localStorage.getItem("user"));
+        return u?.picture || null;
+    });
 
     const BACKEND = import.meta.env.VITE_BASE_URL;
 
@@ -48,23 +48,26 @@ const ProfilePage = () => {
         <div className="min-h-screen bg-gray-50 flex flex-col">
 
             {/* Navbar */}
-            <nav className="bg-white shadow-sm px-6 py-4">
+            <nav className="bg-white shadow-sm px-6 py-4 relative">
                 <div className="max-w-5xl mx-auto flex justify-between items-center">
-                    <div className="flex items-center gap-8">
+
+                    <div className="flex items-center">
                         <h1 className="font-bold text-lg">
                             ShortLink
                         </h1>
-                        <div className="hidden md:flex gap-6 text-sm text-gray-500">
-                            <span
-                                className="hover:text-blue-600 cursor-pointer"
-                                onClick={() => navigate("/dashboard")}
-                            >
-                                Dashboard
-                            </span>
-                            <span className="hover:text-blue-600 cursor-pointer">Analytics</span>
-                            <span className="hover:text-blue-600 cursor-pointer">Links</span>
-                        </div>
                     </div>
+
+                    <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 gap-6 text-sm text-gray-500 text-center">
+                        <p
+                            className="hover:text-blue-600 text-center cursor-pointer"
+                            onClick={() => navigate("/dashboard")}
+                        >
+                            Dashboard
+                        </p>
+                        <p className="hover:text-blue-600 cursor-pointer">Analytics</p>
+                        <p className="hover:text-blue-600 cursor-pointer">Links</p>
+                    </div>
+
                     <div className="flex items-center gap-3">
                         <span className="text-sm text-blue-600 font-medium flex items-center gap-1">
                             Profile
@@ -83,8 +86,10 @@ const ProfilePage = () => {
                             )}
                         </div>
                     </div>
+
                 </div>
             </nav>
+
 
             {/* Content */}
             <div className="flex-1 w-full max-w-2xl mx-auto py-8 px-4">
