@@ -1,5 +1,5 @@
 import { useState } from "react";
-import useNavigate from 'react-router'
+import { useNavigate } from "react-router";
 import api from "../api/axios";
 
 export const useAuth = () => {
@@ -13,44 +13,64 @@ export const useAuth = () => {
     };
 
     const getToken = () => localStorage.getItem("token");
+
     const isAuthenticated = () => !!getToken();
-    
+
+    const updateUser = (data) => {
+        const user = getUser();
+        const updated = { ...user, ...data };
+        localStorage.setItem("user", JSON.stringify(updated));
+    };
+
     const register = async (data) => {
         setLoading(true);
         setError(null);
-        try{
-            await api.post("/api/auth/register", data)
+        try {
+            await api.post("/api/auth/register", data);
             navigate("/login");
-        }catch(err){
-            setError(err.response?.data?.error || "Register failed");
-        }finally{
+        } catch (err) {
+            setError(err.response?.data?.message || "Register failed");
+        } finally {
             setLoading(false);
         }
-    }
+    };
+
+    const login = async (data) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await api.post("/api/auth/login", data);
+            const { token, id, name, email, picture } = res.data.results;
+            localStorage.setItem("token", token);
+            localStorage.setItem("user", JSON.stringify({
+                id,
+                name,
+                email,
+                picture: picture || null,
+            }));
+            navigate("/dashboard");
+        } catch (err) {
+            setError(err.response?.data?.message || "Login failed");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const logout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+    };
+
+    return {
+        loading,
+        error,
+        getUser,
+        getToken,
+        isAuthenticated,
+        updateUser,
+        register,
+        login,
+        logout,
+    };
 };
-
-const login = async (data) => {
-    setLoading(true);
-    setError(null);
-    try {
-        const res = await api.post("/api/auth/login", data);
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user", JSON.stringify({
-            name: res.data.name,
-            email: res.data.email,
-        }));
-        navigate("/dashboard");
-    } catch (error) {
-        setError(err.response?.data?.error || "Login failed");
-    } finally{
-        setLoading(false);
-    }
-}
-
-const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-}
-
-return { loading, error, getUser, getToken, isAuthenticated, register, login, logout}
