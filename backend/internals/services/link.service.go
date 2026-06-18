@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"os"
 
 	"github.com/ilhammursidi/shortlink/internals/dto"
@@ -49,4 +50,19 @@ func (s *LinkService) GetOriginalURL(ctx context.Context, slug string) (string, 
 		return "", errors.New("link not found")
 	}
 	return url, nil
+}
+
+func (s *LinkService) DeleteLink(id int, slug string) error {
+	err := s.repo.SoftDelete(id)
+	if err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	err = s.repo.DeleteCache(ctx, slug)
+	if err != nil {
+		log.Printf("Warning: Fail to delete cache Redis for slug %s: %v", slug, err)
+	}
+
+	return nil
 }
