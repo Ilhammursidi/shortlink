@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 
 const RegisterPage = () => {
@@ -26,7 +26,7 @@ const RegisterPage = () => {
 
         {/* Title */}
         <h1 className="text-2xl font-bold text-center mb-6">
-          Short<span className="text-blue-600">Link</span>
+          ShortLink
         </h1>
 
         {/* Error */}
