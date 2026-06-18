@@ -14,6 +14,7 @@ type LoginRequest struct {
 
 type AuthResponse struct {
 	Token string `json:"token"`
+	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }
