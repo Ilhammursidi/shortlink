@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import api from "../api/axios";
+import Navbar from "../components/Navbar";
 
 const LandingPage = () => {
   const { isAuthenticated, logout } = useAuth();
@@ -40,9 +41,7 @@ const LandingPage = () => {
             ShortLink
           </h1>
           <div className="flex gap-6 text-sm text-gray-600">
-            <Link to="/dashboard" className="hover:text-blue-600 border-b-2 border-blue-600">Dashboard</Link>
-            <Link to="/dashboard" className="hover:text-blue-600">Analytics</Link>
-            <Link to="/dashboard" className="hover:text-blue-600">Links</Link>
+ 
           </div>
         </div>
         <div className="flex gap-3">
@@ -162,10 +161,8 @@ const LandingPage = () => {
       </section>
 
       {/* Data Insight */}
-      <section className="py-16 px-8 flex flex-col md:flex-row items-center gap-12 max-w-5xl mx-auto">
-        <div className="w-full md:w-1/2 bg-gray-200 rounded-lg overflow-hidden h-64 flex items-center justify-center">
-          <span className="text-gray-400 text-sm">📊 Analytics Preview</span>
-        </div>
+      <section className="py-16 px-8 flex flex-col md:flex-row items-center justify-between gap-12 max-w-5xl mx-auto">
+        <img className="h-80 rounded-md shadow-2xl" src="/public/komen.png" alt="" />
         <div className="w-full md:w-1/2">
           <p className="text-xs text-blue-600 font-semibold uppercase mb-2">
             Data Driven Insights
