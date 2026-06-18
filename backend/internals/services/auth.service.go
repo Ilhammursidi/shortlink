@@ -49,6 +49,7 @@ func (s *AuthService) Login(req dto.LoginRequest) (*dto.AuthResponse, error) {
 
 	return &dto.AuthResponse{
 		Token: token,
+		ID:    user.ID,
 		Name:  user.Name,
 		Email: user.Email,
 	}, nil
