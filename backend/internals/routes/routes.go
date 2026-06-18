@@ -14,7 +14,7 @@ func Register(
 ) {
 	r.Use(middleware.CorsMiddleware())
 	r.Static("/uploads", "./uploads")
-	r.GET("/:slug", link.Redirect)
+	r.GET("/r/:slug", link.Redirect)
 
 	api := r.Group("/api")
 	api.POST("/auth/register", auth.Register)
