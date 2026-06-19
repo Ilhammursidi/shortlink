@@ -162,7 +162,7 @@ const LandingPage = () => {
 
       {/* Data Insight */}
       <section className="py-16 px-8 flex flex-col md:flex-row items-center justify-between gap-12 max-w-5xl mx-auto">
-        <img className="h-80 rounded-md shadow-2xl" src="/public/komen.png" alt="" />
+        <img className="h-80 rounded-md shadow-2xl" src="laptop.png" alt="laptop" />
         <div className="w-full md:w-1/2">
           <p className="text-xs text-blue-600 font-semibold uppercase mb-2">
             Data Driven Insights
